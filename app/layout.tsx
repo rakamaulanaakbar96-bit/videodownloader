@@ -24,6 +24,11 @@ export default function RootLayout({
                     src="https://pl28531032.effectivegatecpm.com/f9/16/a8/f916a81bcf4eaa91c6ac792532135103.js"
                     strategy="afterInteractive"
                 />
+                {/* Adsterra Social Bar */}
+                <Script
+                    src="https://pl28531361.effectivegatecpm.com/58/4f/6f/584f6fef7e5b3a82637e27ac00b209f4.js"
+                    strategy="afterInteractive"
+                />
             </body>
         </html>
     )
