@@ -134,29 +134,18 @@ export default function DownloaderPage() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.error || "Failed to download video");
+                throw new Error(errorData.error || "Failed to get video URL");
             }
 
-            // Get filename from header or use default
-            const contentDisposition = response.headers.get("content-disposition");
-            let filename = `${videoInfo.title}.mp4`;
-            if (contentDisposition) {
-                const match = contentDisposition.match(/filename="?(.+)"?/);
-                if (match) filename = match[1];
+            // Get direct URL from response
+            const data = await response.json();
+
+            if (data.download_url) {
+                // Open direct URL - browser downloads from source (bandwidth efficient!)
+                window.open(data.download_url, "_blank");
+            } else {
+                throw new Error("No download URL received");
             }
-
-            // Download as blob
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-
-            // Create download link and trigger
-            const a = document.createElement("a");
-            a.href = downloadUrl;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(downloadUrl);
         } catch (err: any) {
             setError(err.message || "Download failed. Please try again.");
         } finally {

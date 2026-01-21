@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Proxy request to Python backend for download
+        // Proxy request to Python backend - get direct video URL
         const backendUrl = "https://grouprk-video-downloader-api.hf.space/api/download";
 
         try {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
             if (!backendResponse.ok) {
                 const errorText = await backendResponse.text();
                 console.error("Backend Error:", errorText);
-                let errorMessage = "Failed to download video";
+                let errorMessage = "Failed to get video URL";
                 try {
                     const errorJson = JSON.parse(errorText);
                     errorMessage = errorJson.detail || errorMessage;
@@ -39,24 +39,9 @@ export async function POST(request: NextRequest) {
                 );
             }
 
-            // Stream the file response
-            const contentType = backendResponse.headers.get("content-type") || "video/mp4";
-            const contentDisposition = backendResponse.headers.get("content-disposition");
-
-            const responseHeaders: HeadersInit = {
-                "Content-Type": contentType,
-            };
-
-            if (contentDisposition) {
-                responseHeaders["Content-Disposition"] = contentDisposition;
-            }
-
-            const blob = await backendResponse.blob();
-
-            return new NextResponse(blob, {
-                status: 200,
-                headers: responseHeaders,
-            });
+            // Return JSON with direct URL - no file streaming needed!
+            const data = await backendResponse.json();
+            return NextResponse.json(data);
 
         } catch (fetchError) {
             console.error("Connection Error:", fetchError);
