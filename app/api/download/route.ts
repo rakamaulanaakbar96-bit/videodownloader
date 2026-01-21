@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Proxy request to Python backend for download
-        const backendUrl = "http://127.0.0.1:8000/api/download";
+        const backendUrl = "https://grouprk-video-downloader-api.hf.space/api/download";
 
         try {
             const backendResponse = await fetch(backendUrl, {
