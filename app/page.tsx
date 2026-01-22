@@ -137,25 +137,48 @@ export default function DownloaderPage() {
                 throw new Error(errorData.error || "Failed to get video URL");
             }
 
-            // Get direct URL from response
             const data = await response.json();
 
-            if (data.download_url) {
-                // Create anchor element to force download
-                const filename = data.filename || `${videoInfo.title}.mp4`;
+            if (!data.download_url) {
+                throw new Error("No download URL received");
+            }
+
+            const filename = data.filename || `${videoInfo.title}.mp4`;
+
+            // For TikTok, YouTube, Instagram - fetch as blob (their CDN blocks direct access)
+            const needsProxy = ["TikTok", "YouTube", "Instagram"].includes(videoInfo.platform);
+
+            if (needsProxy) {
+                // Fetch video through our API proxy to bypass CDN restrictions
+                const proxyResponse = await fetch("/api/proxy-download", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ video_url: data.download_url, filename }),
+                });
+
+                if (!proxyResponse.ok) {
+                    throw new Error("Failed to download video");
+                }
+
+                const blob = await proxyResponse.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+
+                const a = document.createElement("a");
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(blobUrl);
+            } else {
+                // For Facebook, Twitter - direct download works
                 const a = document.createElement("a");
                 a.href = data.download_url;
                 a.download = filename;
                 a.target = "_blank";
-                a.rel = "noopener noreferrer";
-
-                // For cross-origin URLs, download attribute may not work
-                // So we also set it to open in new tab as fallback
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-            } else {
-                throw new Error("No download URL received");
             }
         } catch (err: any) {
             setError(err.message || "Download failed. Please try again.");
