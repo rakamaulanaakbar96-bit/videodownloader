@@ -145,16 +145,34 @@ export default function DownloaderPage() {
 
             const filename = data.filename || `${videoInfo.title}.mp4`;
 
-            // Direct download for all platforms (Proxy blocked by 403 errors)
-            // Note: Browser might play video for MP4 links. User needs to "Save Video As".
-            const a = document.createElement("a");
-            a.href = data.download_url;
-            a.download = filename;
-            a.target = "_blank";
-            a.rel = "noopener noreferrer";
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            try {
+                // Attempt 1: Fetch as Blob to force download (Client-side, no Vercel bandwidth)
+                const videoResponse = await fetch(data.download_url);
+                if (!videoResponse.ok) throw new Error("Network response was not ok");
+
+                const blob = await videoResponse.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+
+                const a = document.createElement("a");
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (blobError) {
+                console.warn("Blob download failed (likely CORS), falling back to direct link:", blobError);
+
+                // Attempt 2: Fallback to Direct Link (Browser might auto-play)
+                const a = document.createElement("a");
+                a.href = data.download_url;
+                a.download = filename;
+                a.target = "_blank";
+                a.rel = "noopener noreferrer";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
         } catch (err: any) {
             setError(err.message || "Download failed. Please try again.");
         } finally {
@@ -328,12 +346,12 @@ export default function DownloaderPage() {
                                     ) : (
                                         <>
                                             <Download className="w-5 h-5 md:w-6 md:h-6" />
-                                            Open Video (Right-click to Save)
+                                            Download Video
                                         </>
                                     )}
                                 </button>
                                 <p className="text-xs text-slate-500 text-center mt-3">
-                                    *If video plays in new tab, right-click and select "Save Video As"
+                                    *Attempting auto-download. If video opens in new tab, please right-click and "Save Video As".
                                 </p>
                             </div>
                         </motion.div>
