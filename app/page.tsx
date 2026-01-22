@@ -145,37 +145,16 @@ export default function DownloaderPage() {
 
             const filename = data.filename || `${videoInfo.title}.mp4`;
 
-            // For TikTok, YouTube, Instagram - fetch as blob (their CDN blocks direct access)
-            const needsProxy = ["TikTok", "YouTube", "Instagram"].includes(videoInfo.platform);
-
-            if (needsProxy) {
-                // Construct direct link to Backend Stream to force download
-                // This bypasses Vercel and browser restrictions
-                const encodedUrl = encodeURIComponent(data.download_url);
-                const encodedFilename = encodeURIComponent(filename);
-
-                // Direct call to Hugging Face Backend
-                const proxyUrl = `https://grouprk-video-downloader-api.hf.space/api/proxy-file?url=${encodedUrl}&filename=${encodedFilename}`;
-
-                // Create anchor to trigger download
-                const a = document.createElement("a");
-                a.href = proxyUrl;
-                // 'download' attribute might be ignored for cross-origin, but Content-Disposition from server will enforce it
-                a.setAttribute('download', filename);
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                // No need to revoke URL as it's a direct link
-            } else {
-                // For Facebook, Twitter - direct download works
-                const a = document.createElement("a");
-                a.href = data.download_url;
-                a.download = filename;
-                a.target = "_blank";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            }
+            // Direct download for all platforms (Proxy blocked by 403 errors)
+            // Note: Browser might play video for MP4 links. User needs to "Save Video As".
+            const a = document.createElement("a");
+            a.href = data.download_url;
+            a.download = filename;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         } catch (err: any) {
             setError(err.message || "Download failed. Please try again.");
         } finally {
