@@ -141,8 +141,19 @@ export default function DownloaderPage() {
             const data = await response.json();
 
             if (data.download_url) {
-                // Open direct URL - browser downloads from source (bandwidth efficient!)
-                window.open(data.download_url, "_blank");
+                // Create anchor element to force download
+                const filename = data.filename || `${videoInfo.title}.mp4`;
+                const a = document.createElement("a");
+                a.href = data.download_url;
+                a.download = filename;
+                a.target = "_blank";
+                a.rel = "noopener noreferrer";
+
+                // For cross-origin URLs, download attribute may not work
+                // So we also set it to open in new tab as fallback
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
             } else {
                 throw new Error("No download URL received");
             }
