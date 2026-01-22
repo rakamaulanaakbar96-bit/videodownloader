@@ -328,10 +328,13 @@ export default function DownloaderPage() {
                                     ) : (
                                         <>
                                             <Download className="w-5 h-5 md:w-6 md:h-6" />
-                                            Download Video
+                                            Open Video (Right-click to Save)
                                         </>
                                     )}
                                 </button>
+                                <p className="text-xs text-slate-500 text-center mt-3">
+                                    *If video plays in new tab, right-click and select "Save Video As"
+                                </p>
                             </div>
                         </motion.div>
                     )}
