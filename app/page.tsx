@@ -35,7 +35,6 @@ export default function DownloaderPage() {
         if (inputUrl.includes("tiktok.com")) return "TikTok";
         if (inputUrl.includes("instagram.com")) return "Instagram";
         if (inputUrl.includes("facebook.com") || inputUrl.includes("fb.watch")) return "Facebook";
-        if (inputUrl.includes("youtube.com") || inputUrl.includes("youtu.be")) return "YouTube";
         if (inputUrl.includes("twitter.com") || inputUrl.includes("x.com")) return "Twitter/X";
         return "Unknown";
     };
@@ -45,7 +44,6 @@ export default function DownloaderPage() {
             case "TikTok": return "from-pink-500 to-cyan-500";
             case "Instagram": return "from-purple-500 via-pink-500 to-orange-400";
             case "Facebook": return "from-blue-600 to-blue-400";
-            case "YouTube": return "from-red-600 to-red-400";
             case "Twitter/X": return "from-slate-800 to-slate-600";
             default: return "from-violet-600 to-indigo-600";
         }
@@ -79,7 +77,7 @@ export default function DownloaderPage() {
 
         const platform = detectPlatform(url);
         if (platform === "Unknown") {
-            setError("Unsupported platform. Please use TikTok, Instagram, Facebook, YouTube, or Twitter.");
+            setError("Unsupported platform. Please use TikTok, Instagram, Facebook, or Twitter.");
             return;
         }
 
