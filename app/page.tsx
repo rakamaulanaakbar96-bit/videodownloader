@@ -149,27 +149,23 @@ export default function DownloaderPage() {
             const needsProxy = ["TikTok", "YouTube", "Instagram"].includes(videoInfo.platform);
 
             if (needsProxy) {
-                // Fetch video through our API proxy to bypass CDN restrictions
-                const proxyResponse = await fetch("/api/proxy-download", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ video_url: data.download_url, filename }),
-                });
+                // Construct direct link to Backend Stream to force download
+                // This bypasses Vercel and browser restrictions
+                const encodedUrl = encodeURIComponent(data.download_url);
+                const encodedFilename = encodeURIComponent(filename);
 
-                if (!proxyResponse.ok) {
-                    throw new Error("Failed to download video");
-                }
+                // Direct call to Hugging Face Backend
+                const proxyUrl = `https://grouprk-video-downloader-api.hf.space/api/proxy-file?url=${encodedUrl}&filename=${encodedFilename}`;
 
-                const blob = await proxyResponse.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
-
+                // Create anchor to trigger download
                 const a = document.createElement("a");
-                a.href = blobUrl;
-                a.download = filename;
+                a.href = proxyUrl;
+                // 'download' attribute might be ignored for cross-origin, but Content-Disposition from server will enforce it
+                a.setAttribute('download', filename);
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                window.URL.revokeObjectURL(blobUrl);
+                // No need to revoke URL as it's a direct link
             } else {
                 // For Facebook, Twitter - direct download works
                 const a = document.createElement("a");
